@@ -1,3 +1,5 @@
 regex
 numpy
 pandas
+jupyter
+scipy
