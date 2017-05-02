@@ -29,7 +29,7 @@ class PatternVectorizer:
       '.+': "((?![@,#])[\\p{L}\\p{M}*\\p{N}_]+|(?![@,#])\\p{Punct}+)",
       '<hashtag>': "#([\\p{L}\\p{M}*\\p{N}_]+|(?![@,#])\\p{Punct}+)",
       '<usermention>': "@([\\p{L}\\p{M}*\\p{N}_]+|(?![@,#])\\p{Punct}+)",
-      '<url>': "http://([\\p{L}\\p{M}*\\p{N}_\\.\\/]+|(?![@,#])\\p{Punct}+)"
+      '<url>': "https?://([\\p{L}\\p{M}*\\p{N}_\\.\\/]+|(?![@,#])\\p{Punct}+)"
     }
     return tok_to_reg.get(token) or token
   
