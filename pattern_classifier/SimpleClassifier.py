@@ -30,7 +30,27 @@ class SimpleClassifier:
     return [self.classes[c] for c in self.get_emotion_score(documentPatternVectors).argmin(axis=1)]
   
   def get_emotion_score(self, documentPatternVectors):
-    return documentPatternVectors.dot(self.scoreMatrix)  
+    return documentPatternVectors.dot(self.scoreMatrix)
+
+  def get_emotion_prob(self, documentPatternVectors, ascending=True):
+    emo_score = self.get_emotion_score(documentPatternVectors)
+    emo_sum = emo_score.sum(axis=1)
+    emo_sum[emo_sum == 0] = 1
+    if ascending:
+      emo_prob = self.softmax(1 - (emo_score / emo_sum[:, np.newaxis]))
+    else:
+      emo_prob = self.softmax(emo_score / emo_sum[:, np.newaxis])
+    return emo_prob
+  
+  def softmax(self, z):
+    assert len(z.shape) == 2
+    s = np.max(z, axis=1)
+    s = s[:, np.newaxis] # necessary step to do broadcasting
+    e_x = np.exp(z - s)
+    div = np.sum(e_x, axis=1)
+    div = div[:, np.newaxis] # dito
+    return e_x / div
+  
   
   
   @classmethod

@@ -1,6 +1,8 @@
 import regex
 import pandas as pd
 import numpy as np
+from joblib import Parallel, delayed
+from scipy.sparse import csr_matrix, vstack
 
 class PatternVectorizer:
 
@@ -15,13 +17,20 @@ class PatternVectorizer:
     self.vocabulary = vocabulary
     
   def transform(self, documents):
-    X = np.array([*map(lambda doc: self.count_vocab(doc), documents)], dtype=np.int32)
+    X = csr_matrix(
+        [self.count_vocab(doc) for doc in documents]
+    )
     if self.binary:
       X[X>0] = 1
     return X
+
+  def transform_parrallel(self, documents, n_jobs=1, n_chunk=500):
+    chunks = [documents[i:i + n_chunk] for i in range(0, len(documents), n_chunk)]
+    res = Parallel(n_jobs=4)(delayed(self.transform)(chunk) for chunk in chunks)
+    return vstack(res)
     
   def count_vocab(self, text):
-    return self.vocabulary.regex.apply(lambda voc: len(voc.findall(text)))    
+    return self.vocabulary.regex.apply(lambda voc: len(voc.findall(text)))
   
   @classmethod
   def token_to_regexp(cls, token):

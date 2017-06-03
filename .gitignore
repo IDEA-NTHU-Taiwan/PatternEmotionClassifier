@@ -3,3 +3,5 @@
 .ipynb_checkpoints
 venv/
 ENV/
+test/*.pkl.compressed
+test/*.npz
