@@ -26,7 +26,7 @@ class PatternVectorizer:
 
   def transform_parrallel(self, documents, n_jobs=1, n_chunk=500):
     chunks = [documents[i:i + n_chunk] for i in range(0, len(documents), n_chunk)]
-    res = Parallel(n_jobs=4)(delayed(self.transform)(chunk) for chunk in chunks)
+    res = Parallel(n_jobs=n_jobs)(delayed(self.transform)(chunk) for chunk in chunks)
     return vstack(res)
     
   def count_vocab(self, text):
