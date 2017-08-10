@@ -18,7 +18,7 @@ class PatternVectorizer:
     
   def transform(self, documents):
     X = csr_matrix(
-        [self.count_vocab(doc) for doc in documents]
+        np.vstack([self.count_vocab(doc) for doc in documents])
     )
     if self.binary:
       X[X>0] = 1
@@ -30,7 +30,7 @@ class PatternVectorizer:
     return vstack(res)
     
   def count_vocab(self, text):
-    return self.vocabulary.regex.apply(lambda voc: len(voc.findall(text)))
+    return self.vocabulary.regex.apply(lambda voc: len(voc.findall(text))).values
   
   @classmethod
   def token_to_regexp(cls, token):

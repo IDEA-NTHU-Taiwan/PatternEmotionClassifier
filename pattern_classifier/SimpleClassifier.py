@@ -3,6 +3,8 @@ import os
 import numpy as np
 import pandas as pd
 
+from functools import reduce
+
 from .PatternVectorizer import PatternVectorizer
 
 class SimpleClassifier:
@@ -50,24 +52,24 @@ class SimpleClassifier:
     div = np.sum(e_x, axis=1)
     div = div[:, np.newaxis] # dito
     return e_x / div
-  
-  
-  
+   
   @classmethod
-  def load_from_folder(cls, patternFolderPath, rank='average', ascending=False):
-    patterns_df = pd.DataFrame()
-    emotions = []
-    for filename in os.listdir(patternFolderPath):
-      emotion = filename.replace('tficf_','')
-      col = ['pattern', emotion]
-      emotions.append(emotion) 
-      tmp = pd.read_table(os.path.join(patternFolderPath, filename), header=None, names=col)
-      if rank:
-        tmp[emotion] = tmp[emotion].rank(method=rank, ascending=ascending, pct=True)
-      if len(patterns_df) == 0:
-        patterns_df = tmp
-      else:
-        patterns_df = pd.merge(patterns_df, tmp ,on='pattern')
+  def load_from_folder(cls, patternFolderPath, rank='average', ascending=False, emo_file_suffix='tficf_'):
+    
+    def load_file(file, patternFolderPath=patternFolderPath, rank=rank, ascending=ascending, emo_file_suffix=emo_file_suffix):
+        emotion = file.replace(emo_file_suffix,'')
+        res = pd.read_csv(
+            patternFolderPath + file, 
+            names=['pattern', emotion],
+            sep='\t',
+            dtype={'pattern': str, emotion:np.float32})
+        return res
+        
+    df_list = [load_file(f) for f in os.listdir(patternFolderPath)]
+    patterns_df = reduce( (lambda right, left: pd.merge(right, left, on='pattern')), df_list )
+    emotions = patterns_df.columns.tolist()[1:]
+    
+    patterns_df[emotions] = patterns_df[emotions].rank(method=rank, ascending=ascending, pct=True)
     
     pv = PatternVectorizer(list(patterns_df.pattern))
     new_cls = cls(patterns_df[emotions].values, classes=emotions)
